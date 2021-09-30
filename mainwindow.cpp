@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "ui_checkSolution.h"
 
 class Delegate : public QItemDelegate {
 public:
@@ -19,74 +18,20 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     ui->tableWidget->setItemDelegate(new Delegate);
+    board = new Board();
+    setBoardView();
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
-}
-
-bool MainWindow::checkSudoku() {
-    bool isCorrect {true};
-
-    for (int i = 0; i < 9; i++) {
-        isCorrect = isCorrect && checkColumn(i);
-        isCorrect = isCorrect && checkRow(i);
-    }
-
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            isCorrect = isCorrect && checkBlock(3*i, 3*j);
-         }
-    }
-    return isCorrect;
-}
-
-bool MainWindow::checkRow(int row) {
-    bool visited[9] {false};
-
-    for (int i = 0; i < 9; i++) {
-        if (sudoku[row][i] > 0 && visited[sudoku[row][i] - 1]) {
-            return false;
-        } else {
-            visited[sudoku[row][i] - 1] = true;
-        }
-    }
-    return true;
-}
-
-bool MainWindow::checkColumn(int col) {
-    bool visited[9] {false};
-
-    for (int i = 0; i < 9; i++) {
-        if (sudoku[i][col] > 0 && visited[sudoku[i][col] - 1 ]) {
-            return false;
-        } else {
-            visited[sudoku[i][col] - 1] = true;
-        }
-    }
-    return true;
-}
-
-bool MainWindow::checkBlock(int row, int col) {
-    bool visited[9] {false};
-
-    for (int i = 0; i < 3; i++) {
-        for (int j = 0; j < 3; j++) {
-            if (sudoku[row][col] > 0 && visited[sudoku[row+i][col+j]]) {
-                return false;
-            } else {
-                visited[sudoku[row+i][col+j]] = true;
-            }
-        }
-    }
-    return true;
+    delete board;
 }
 
 
 void MainWindow::on_checkButton_released() {
     getSudoku();
-    bool isCorrect = checkSudoku();
+    bool isCorrect = board->checkSudoku();
 
     QDialog *Correct = new QDialog();
     Correct->setFixedSize(300,100);
@@ -105,18 +50,7 @@ void MainWindow::on_checkButton_released() {
 }
 
 void MainWindow::on_solveButton_released() {
-    getSudoku();
 
-    solveBrute(0, 0);
-
-    for(int i = 0; i < 9; i++){
-            for(int j = 0; j < 9; j++){
-                ui -> tableWidget -> setItem(i,j, new QTableWidgetItem);
-
-                QString str = QString::number(sudoku[i][j]);
-                ui -> tableWidget -> item(i,j) -> setText(str);
-            }
-        }
 }
 
 void MainWindow::getSudoku() {
@@ -124,40 +58,24 @@ void MainWindow::getSudoku() {
         for (int j = 0; j < 9; j++) {
             QTableWidgetItem *cell = ui->tableWidget->item(i,j);
             if (cell) {
-                sudoku[i][j] = cell->text().toInt();
-            } else {
-                sudoku[i][j] = 0;            }
+                board->fillCell(i, j, cell->text().toInt());
+            }
         }
     }
 }
 
 bool MainWindow::solveBrute(int row, int col) {
-    int next_row = (col == 8) ? (row + 1):row;
-    int next_col = (col+1) % 9;
-
-    //Case all 9 rows was solved
-    if(row == 9) {
-        return true;
-    }
-
-    //Go to next row and column
-    if(sudoku[row][col] != 0) {
-        return solveBrute(next_row, next_col);
-    }
-
-    for(int num = 1; num <= 9; num++){
-        sudoku[row][col] = num;
-
-        qDebug() << num;
-
-        if(checkSudoku() && solveBrute(next_row, next_col)){
-                return true;
-        }
-
-        //If it's not ok erase it and try again
-        sudoku[row][col] = 0;
-    }
-
     return 0;
 }
+
+void MainWindow::setBoardView() {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            QTableWidgetItem *temp = new QTableWidgetItem(board->get(i, j));
+            ui->tableWidget->setItem(i, j, temp);
+        }
+    }
+}
+
+
 
