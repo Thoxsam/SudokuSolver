@@ -19,7 +19,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     ui->tableWidget->setItemDelegate(new Delegate);
     board = new Board();
-    setBoardView();
 }
 
 MainWindow::~MainWindow()
@@ -50,7 +49,7 @@ void MainWindow::on_checkButton_released() {
 }
 
 void MainWindow::on_solveButton_released() {
-
+    setBoardView();
 }
 
 void MainWindow::getSudoku() {
@@ -71,9 +70,62 @@ bool MainWindow::solveBrute(int row, int col) {
 void MainWindow::setBoardView() {
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            QTableWidgetItem *temp = new QTableWidgetItem(board->get(i, j));
-            ui->tableWidget->setItem(i, j, temp);
+            ui->tableWidget->setItem(i, j, new QTableWidgetItem(board->getQString(i, j)));
         }
+    }
+
+}
+
+void MainWindow::on_openButton_released() {
+    QString num;
+    QString filename = QFileDialog::getOpenFileName(
+                this,
+                "Open sudoku file",
+                QDir::currentPath(),
+                "Text files (*.txt*)");
+    QFile file(filename);
+    if (!file.open(QIODevice::ReadWrite)) return;
+
+    QTextStream in(&file);
+
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            num = in.read(1);
+            if (num.toInt() > 0)
+                board->fillCell(i, j, num.toInt());
+            else
+                j--;
+        }
+    }
+    file.close();
+    setBoardView();
+}
+
+void MainWindow::on_saveButton_released() {
+    QString fileName = QFileDialog::getSaveFileName(
+                this,
+                "Save sudoku",
+                QDir::currentPath(),
+                "Text files (*.txt*)");
+    if (fileName.isEmpty())
+        return;
+    else {
+        QFile file(fileName);
+        if (!file.open(QIODevice::WriteOnly)) {
+            QMessageBox::information(this, "Unable to open file", file.errorString());
+            return;
+        }
+        getSudoku();
+
+        QDataStream out(&file);
+        for (int i = 0; i < 9; i++) {
+            for (int j = 0; j < 9; j++) {
+                if (board->getInt(i, j) >= 0)
+                    out << board->getQString(i, j);
+            }
+            out << "\n";
+        }
+        file.close();
     }
 }
 

@@ -2,12 +2,15 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <QApplication>
 #include <QItemDelegate>
 #include <QLineEdit>
 #include <QIntValidator>
 #include <QDialog>
 #include <QLabel>
 #include <iostream>
+#include <QFileDialog>
+#include <QMessageBox>
 #include "board.h"
 
 QT_BEGIN_NAMESPACE
@@ -28,6 +31,8 @@ public:
 private slots:
     void on_checkButton_released();
     void on_solveButton_released();
+    void on_openButton_released();
+    void on_saveButton_released();
 private:
     void setBoardView();
     Board *board;
