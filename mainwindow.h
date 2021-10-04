@@ -26,13 +26,15 @@ public:
     ~MainWindow();
 
     void getSudoku();
-    bool solveBrute(int row, int col);
+    void solveBrute();
 
 private slots:
     void on_checkButton_released();
     void on_solveButton_released();
     void on_openButton_released();
     void on_saveButton_released();
+    void on_clearButton_released();
+
 private:
     void setBoardView();
     Board *board;

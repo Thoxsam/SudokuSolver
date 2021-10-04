@@ -4,13 +4,20 @@ Board::Board()
 {
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            sudoku[i][j] = 1;
+            sudoku[i][j] = 0;
         }
     }
 }
 
 bool Board::checkSudoku() {
     bool isCorrect {true};
+
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            if (sudoku[i][j] == 0)
+                    return false;
+        }
+    }
 
     for (int i = 0; i < 9; i++) {
         isCorrect = isCorrect && checkColumn(i);
@@ -25,13 +32,25 @@ bool Board::checkSudoku() {
     return isCorrect;
 }
 
+bool Board::isValid(int x, int y) {
+    bool isCorrect {true};
+    int tempX = x/3;
+    int tempY = y/3;
+
+    isCorrect = isCorrect && checkRow(x);
+    isCorrect = isCorrect && checkColumn(y);
+    isCorrect = isCorrect && checkBlock(tempX*3, tempY*3);
+
+    return isCorrect;
+}
+
 bool Board::checkRow(int row) {
     bool visited[9] {false, false, false,
                     false, false, false,
                     false, false, false};
 
     for (int i = 0; i < 9; i++) {
-        if (visited[sudoku[row][i] - 1]) {
+        if (sudoku[row][i] > 0 && visited[sudoku[row][i] - 1]) {
             return false;
         } else if (sudoku[row][i] > 0) {
             visited[sudoku[row][i] - 1] = true;
@@ -46,7 +65,7 @@ bool Board::checkColumn(int col) {
                     false, false, false};
 
     for (int i = 0; i < 9; i++) {
-        if (visited[sudoku[i][col] - 1 ]) {
+        if (sudoku[i][col] > 0 && visited[sudoku[i][col] - 1 ]) {
             return false;
         } else if (sudoku[i][col] > 0) {
             visited[sudoku[i][col] - 1] = true;
@@ -62,9 +81,9 @@ bool Board::checkBlock(int row, int col) {
 
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
-            if (visited[sudoku[row+i][col+j]] - 1) {
+            if (sudoku[row+i][col+j] > 0 && visited[sudoku[row+i][col+j] - 1]) {
                 return false;
-            } else if (sudoku[row][col] > 0) {
+            } else if (sudoku[row+i][col+j] > 0) {
                 visited[sudoku[row+i][col+j] - 1] = true;
             }
         }
@@ -85,10 +104,36 @@ void Board::print() {
     }
 }
 
+void Board::reset() {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            fillCell(i, j, 0);
+        }
+    }
+}
+
 QString Board::getQString(int x, int y) {
     return QString::number(sudoku[x][y]);
 }
 
 int Board::getInt(int x, int y) {
     return sudoku[x][y];
+}
+
+bool Board::solveBrute() {
+    for (int i = 0; i < 9; i++) {
+        for (int j = 0; j < 9; j++) {
+            for (int num = 1; num < 10; num++) {
+                if (sudoku[i][j] == 0) {
+                    sudoku[i][j] = num;
+                    if (isValid(i, j)) {
+                        solveBrute();
+                    } else {
+                        sudoku[i][j] = 0;
+                    }
+                }
+            }
+        }
+    }
+    return true;
 }

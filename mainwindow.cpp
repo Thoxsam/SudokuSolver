@@ -49,7 +49,8 @@ void MainWindow::on_checkButton_released() {
 }
 
 void MainWindow::on_solveButton_released() {
-    setBoardView();
+    getSudoku();
+    solveBrute();
 }
 
 void MainWindow::getSudoku() {
@@ -63,14 +64,22 @@ void MainWindow::getSudoku() {
     }
 }
 
-bool MainWindow::solveBrute(int row, int col) {
-    return 0;
+void MainWindow::solveBrute() {
+   if (board->solveBrute()) {
+       setBoardView();
+       board->print();
+   } else {
+
+   }
 }
 
 void MainWindow::setBoardView() {
     for (int i = 0; i < 9; i++) {
         for (int j = 0; j < 9; j++) {
-            ui->tableWidget->setItem(i, j, new QTableWidgetItem(board->getQString(i, j)));
+            if (board->getInt(i, j) > 0)
+                ui->tableWidget->setItem(i, j, new QTableWidgetItem(board->getQString(i, j)));
+            else
+                ui->tableWidget->setItem(i, j, new QTableWidgetItem());
         }
     }
 
@@ -130,4 +139,10 @@ void MainWindow::on_saveButton_released() {
 }
 
 
+
+
+void MainWindow::on_clearButton_released()
+{
+    board->reset();
+}
 
